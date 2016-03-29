@@ -1,18 +1,20 @@
 using GeometryRandomFields
 using Base.Test
 
-GRF = GeometryRandomFields
-
-gf = GRF.GaussianCovarianceFunction(10,1)
+gf = GaussianCovarianceFunction(10,1)
 @test gf(0) == 1
 @test_approx_eq gf(10) exp(-1/2)
 
-mf = GRF.MatérnCovarianceFunction(1/2,10,1)
+mf = MatérnCovarianceFunction(1/2,10,1)
 @test mf(0) == 1
 @test_approx_eq mf(10) exp(-1)
 
 m,n = 1024,512
-M = GRF.grf(m,n,gf)
-@test size(M) == (2n,2m)
+M = grf(m,n,gf)
+@test size(M) == (m,n)
 
-GRF.acf(real(M))
+GeometryRandomFields.acf(real(M))
+
+Z1,Z2 = reim(M)
+
+@test Γ(Z1,10) == 0
