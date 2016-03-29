@@ -11,5 +11,5 @@ function grf(m,n,C::StationaryCovarianceFunction)
     Sjs2 = [Sjs ; Sjs[end,:] ; Sjs[end:-1:2,1] Sjs[end:-1:2,end:-1:2]]
     Γ = fft(Sjs2)
     Z = randc(size(Sjs2)...)    
-    fft(sqrt(Γ./(4*m*n)).*Z)    
+    fft(sqrt(Γ./(4*m*n)).*Z)[1:m,1:n]
 end
