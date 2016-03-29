@@ -1,51 +1,38 @@
-function lattice_tesselation(m,n)
-    g = simple_graph(m*n,is_directed=false)
-    for j in 1:n-1
-        for i in 1:m-1
-            ind = (j-1)*m+i
-            add_edge!(g,ind,ind+1)
-            add_edge!(g,ind,ind+m+1)
-            add_edge!(g,ind,ind+m)
-        end
-        add_edge!(g,(j-1)*m+m,(j-1)*m+2m)
-    end
-    for i in 1:m-1
-        add_edge!(g,(n-1)*m+i,(n-1)*m+i+1)
-    end        
-    g
-end
-
-function excursion_tesselation(A::AbstractMatrix{Bool})
-    m,n = size(A)
-    g = lattice_tesselation(m,n)
-    ge = adjlist(find(A),is_directed=false)
-    for j in 1:n
-        for i in 1:m
-            ind = (j-1)*m+i
-            if A[i,j]
-                ns = collect(out_neighbors(ind,g))
-                ns = ns[ns.>ind]
-                for k in ns
-                    if A[k]
-                        add_edge!(ge,ind,k)
-                    end
-                end
-            end
-        end
-    end
-    ge
-end
-
-function Γ(g)
-    A = adjacency_matrix_sparse(g,Int)
-    Ns = floor(Integer,trace(A^3)/6)
-    Ns - num_edges(g) + num_vertices(g)
-end
-
-function Γ(A::AbstractMatrix{Bool})
-    Γ(excursion_tesselation(A))
-end
+EΓ(x,J) = J^2/(2pi)^(3/2)*x.*exp(-x.^2/2) + 2J/(2pi)*exp(-x.^2/2) + 1/sqrt(2pi)*(1-0.5*(1+erf(x/sqrt(2))))
 
 function Γ(Z::AbstractMatrix{Float64},u)
-    Γ(Z.>u)
+    m,n = size(Z)
+    F,E,P = 0,0,0
+    for j in 1:n-1
+        for i in 1:m-1
+            if Z[i,j]>u
+                P += 1
+                ns1 = Z[i+1,j]>u
+                ns2 = Z[i+1,j+1]>u
+                ns3 = Z[i,j+1]>u
+                E += ns1+ns2+ns3
+                F += (ns1&ns2)+(ns2&ns3)
+            end
+        end
+        if Z[m,j]>u
+            P += 1
+            E += Z[m,j+1]>u
+        end
+    end
+    for i in 1:m-1
+        if Z[i,n]>u
+            P += 1
+            E += Z[i+1,n]>u
+        end
+    end
+    P += Z[m,n]>u
+    F-E+P
+end
+
+function Γ(Z::AbstractMatrix{Float64},u::AbstractVector)
+    γs = zeros(Int,length(u))
+    for i in 1:length(u)
+        γs[i] = Γ(Z,u[i])
+    end
+    γs
 end
