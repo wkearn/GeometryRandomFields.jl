@@ -1,7 +1,5 @@
 module GeometryRandomFields
 
-using Distances, Graphs
-
 export EΓ,Γ,grf,GaussianCovarianceFunction,MatérnCovarianceFunction
 
 include("covariancefunctions.jl")
